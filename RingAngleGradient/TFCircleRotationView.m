@@ -10,6 +10,11 @@
 
 
 #import "AngleGradientLayer.h"
+@interface TFCircleRotationView()
+{
+    BOOL _isAnimationMotion;
+}
+@end
 
 @implementation TFCircleRotationView
 
@@ -57,23 +62,64 @@
     l.cornerRadius = MAX(CGRectGetWidth([self frame]), CGRectGetHeight([self frame]))/2;
     l.masksToBounds = NO;
     l.colors = colors;
+    
+    _isAnimationMotion = NO;
+    
+    if (!_spin)
+    {
+        _spin = [[CABasicAnimation alloc] init];
+        [_spin setKeyPath:@"transform.rotation"];
+    }
+}
+
+- (void)setInnerRadius:(CGFloat)aRadius
+{
+    AngleGradientLayer *l = (AngleGradientLayer *)self.layer;
+    l.ringsRadius = aRadius;
 }
 
 - (void)showAnimation
 {
-    AngleGradientLayer *l = (AngleGradientLayer *)self.layer;
-    l.cornerRadius = MAX(CGRectGetWidth([self frame]), CGRectGetHeight([self frame]))/2;
-    l.ringsRadius = 3.0f;
-
-    l.masksToBounds = YES;
-    
-    CABasicAnimation * spin = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
-    spin.duration = 1;
-    spin.toValue = [NSNumber numberWithFloat:M_PI];
-    spin.cumulative = YES;
-    spin.repeatCount = MAXFLOAT;
-    [self.layer addAnimation:spin forKey:@"spin"];
+    if (!_isAnimationMotion)
+    {
+        _isAnimationMotion = YES;
+        AngleGradientLayer *l = (AngleGradientLayer *)self.layer;
+        l.cornerRadius = MAX(CGRectGetWidth([self frame]), CGRectGetHeight([self frame]))/2;
+        l.masksToBounds = YES;
+        
+        if (_spin)
+        {
+            _spin.duration = 1;
+            _spin.toValue = [NSNumber numberWithFloat:M_PI];
+            _spin.cumulative = YES;
+            _spin.repeatCount = MAXFLOAT;
+            [self.layer addAnimation:_spin forKey:@"spin"];
+        }
+    }
 }
+
+- (void)stopAnimation
+{
+    if (_isAnimationMotion)
+    {
+        if (_spin)
+        {
+            _isAnimationMotion = NO;
+            [self.layer removeAnimationForKey:@"spin"];
+        }
+    }
+}
+
+#if !__has_feature(objc_arc)
+- (void)dealloc
+{
+    if (_spin) {
+        [_spin release];
+         _spin = nil;
+    }
+    [super dealloc];
+}
+#endif
 
 
 @end

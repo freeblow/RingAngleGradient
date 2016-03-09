@@ -10,4 +10,7 @@
 
 @interface TFCircleRotationView : UIView
 - (void)showAnimation;
+- (void)stopAnimation;
+
+@property(nonatomic, copy) CABasicAnimation * spin;
 @end

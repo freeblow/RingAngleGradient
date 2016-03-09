@@ -11,6 +11,9 @@
 #import "TFCircleRotationView.h"
 
 @interface ViewController ()
+{
+    TFCircleRotationView *rotationView;
+}
 
 @end
 
@@ -26,17 +29,27 @@
     
     
     
-    TFCircleRotationView *aRotationView = [[TFCircleRotationView alloc] init];
-    [aRotationView setFrame:CGRectMake(0.0f, 40.0f, 14.f, 14.f)];
+    rotationView = [[TFCircleRotationView alloc] init];
+    [rotationView setFrame:CGRectMake(0.0f, 40.0f, 80.f, 80.f)];
     
-    [aRotationView setBackgroundColor:[UIColor whiteColor]];
-    [self.view addSubview:aRotationView];
+    [rotationView setBackgroundColor:[UIColor clearColor]];
+    [self.view addSubview:rotationView];
     
     
-    [aRotationView showAnimation];
+    [rotationView showAnimation];
+    
+    [[self view] setBackgroundColor:[UIColor redColor]];
 }
 
+- (IBAction)startClick:(id)sender {
+    [rotationView showAnimation];
+}
     
+- (IBAction)stopClick:(id)sender {
+    
+    [rotationView stopAnimation];
+    
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

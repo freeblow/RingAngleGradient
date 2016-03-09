@@ -44,7 +44,6 @@
 #define RGBA_A(c) ((uint)c >> 0 & 255)
 
 @interface AngleGradientLayer(){
-    CALayer *_centerLayer;
 }
 
 - (CGImageRef)newImageGradientInRect:(CGRect)rect;
@@ -65,14 +64,7 @@ static void angleGradient(byte* data, int w, int h, int* colors, int colorCount,
 	self.needsDisplayOnBoundsChange = YES;
     
     _ringsRadius = 12;
-    
-    _centerLayer = [[CALayer alloc] init];
-    [_centerLayer setBackgroundColor:[[UIColor whiteColor] CGColor]];
-    
-    [self addSublayer:_centerLayer];
-    
-    
-	
+   
 	return self;
 }
 
@@ -90,13 +82,13 @@ static void angleGradient(byte* data, int w, int h, int* colors, int colorCount,
 {
     
     _ringsRadius = ringsRadius;
-    [self innerCirleRadius];
+    [self setNeedsDisplay];
     
 }
 
 - (void)drawInContext:(CGContextRef)ctx
 {
-	CGContextSetFillColorWithColor(ctx, self.backgroundColor);
+	CGContextSetFillColorWithColor(ctx, [UIColor clearColor].CGColor);
 	CGRect rect = CGContextGetClipBoundingBox(ctx);
 	CGContextFillRect(ctx, rect);
 
@@ -104,24 +96,53 @@ static void angleGradient(byte* data, int w, int h, int* colors, int colorCount,
 	CGContextDrawImage(ctx, rect, img);
 	CGImageRelease(img);
     
-    [self innerCirleRadius];
-}
-
-- (void)innerCirleRadius
-{
+    
     CGFloat outerRadius = MIN(CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]))/2;
     CGFloat innerRadius = outerRadius - _ringsRadius;
     
     CGRect innerRect = CGRectMake(CGRectGetWidth([self bounds])/2 - innerRadius, CGRectGetHeight([self bounds])/2 - innerRadius, innerRadius*2, innerRadius*2);
     
-    [_centerLayer setFrame:innerRect];
-    _centerLayer.masksToBounds=NO;
-    _centerLayer.cornerRadius = innerRadius;
+    CGContextAddArc(ctx, CGRectGetWidth([self bounds])/2, CGRectGetHeight([self bounds])/2, innerRadius, 0.0, 2*M_PI, 0);
+    CGContextClip(ctx);
+    
+    CGContextClearRect(ctx, innerRect);
 }
+
+
 
 - (CGImageRef)newImageGradientInRect:(CGRect)rect
 {
     return [[self class] newImageGradientInRect:rect colors:self.colors locations:self.locations];
+}
+
++ (int)clearColorComp
+{
+    int ret = 0;
+    
+    CGColorRef aClearColor = [UIColor clearColor].CGColor;
+    CGColorRef c = aClearColor;
+    float r, g, b, a;
+    
+    size_t n = CGColorGetNumberOfComponents(c);
+    const CGFloat *comps = CGColorGetComponents(c);
+    if (comps == NULL) {
+        ret = 0;
+    }
+    else
+    {
+        r = comps[0];
+        if (n >= 4) {
+            g = comps[1];
+            b = comps[2];
+            a = comps[3];
+        }
+        else {
+            g = b = r;
+            a = comps[1];
+        }
+        ret = RGBAF(r, g, b, a);
+    }
+    return ret;
 }
 
 + (CGImageRef)newImageGradientInRect:(CGRect)rect colors:(NSArray *)colors locations:(NSArray *)locations
@@ -217,12 +238,16 @@ void angleGradient(byte* data, int w, int h, int* colors, int colorCount, float*
 	int* p = (int*)data;
 	float centerX = (float)w / 2;
 	float centerY = (float)h / 2;
+    
+    
 	
 	for (int y = 0; y < h; y++)
 	for (int x = 0; x < w; x++) {
 		float dirX = x - centerX;
 		float dirY = y - centerY;
 		float angle = atan2f(dirY, dirX);
+        
+        
 		if (dirY < 0) angle += 2 * M_PI;
 		angle /= 2 * M_PI;
 		
@@ -248,11 +273,17 @@ void angleGradient(byte* data, int w, int h, int* colors, int colorCount, float*
 			nextIndex = index + 1;
 			if (nextIndex >= colorCount) nextIndex = colorCount - 1;
 		}
+        
+        
 		
 		int lc = colors[index];
 		int rc = colors[nextIndex];
 		int color = lerp(lc, rc, t);
 		color = multiplyByAlpha(color);
+      
 		*p++ = color;
 	}
 }
+
+
+
