@@ -38,6 +38,18 @@
     
     [rotationView showAnimation];
     
+    
+    TFCircleRotationView *rotationView2 = [[TFCircleRotationView alloc] init];
+    [rotationView2 setFrame:CGRectMake(0.0f, 200.0f, 20.0f, 20.0f)];
+    
+    [rotationView2 setBackgroundColor:[UIColor clearColor]];
+    [self.view addSubview:rotationView2];
+    [rotationView2 setInnerRadius:3];
+    
+    [rotationView2 showAnimation];
+    
+    [rotationView showAnimation];
+    
     [[self view] setBackgroundColor:[UIColor redColor]];
 }
 

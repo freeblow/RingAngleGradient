@@ -44,6 +44,8 @@
 #define RGBA_A(c) ((uint)c >> 0 & 255)
 
 @interface AngleGradientLayer(){
+    
+    CAShapeLayer *_headerCircleLayer;
 }
 
 - (CGImageRef)newImageGradientInRect:(CGRect)rect;
@@ -63,9 +65,24 @@ static void angleGradient(byte* data, int w, int h, int* colors, int colorCount,
 	
 	self.needsDisplayOnBoundsChange = YES;
     
+    [self initLayer];
+    
     _ringsRadius = 12;
    
 	return self;
+}
+
+- (void)initLayer
+{
+    if(!_headerCircleLayer)
+    {
+        _headerCircleLayer = [[CAShapeLayer alloc] init];
+        [self addSublayer:_headerCircleLayer];
+        
+        //_headerCircleLayer.backgroundColor = [[UIColor blueColor] CGColor];
+        
+        
+    }
 }
 
 
@@ -74,6 +91,7 @@ static void angleGradient(byte* data, int w, int h, int* colors, int colorCount,
 {
 	[_colors release];
 	[_locations release];
+    [_headerCircleLayer release];
 	[super dealloc];
 }
 #endif
@@ -106,6 +124,25 @@ static void angleGradient(byte* data, int w, int h, int* colors, int colorCount,
     CGContextClip(ctx);
     
     CGContextClearRect(ctx, innerRect);
+    CGContextClosePath(ctx);
+    
+    CGContextFillPath(ctx);
+    
+//    CGContextSetFillColorWithColor(ctx, [UIColor yellowColor].CGColor);
+//    CGContextAddArc(ctx, innerRadius  +_ringsRadius, innerRadius/2, _ringsRadius/2, 0.0, 2*M_PI, 1);
+////    CGContextAddArcToPoint(ctx,  innerRadius, 0, innerRadius + _ringsRadius, 0, _ringsRadius/2);
+//    CGContextDrawPath(ctx, kCGPathFill);
+//    CGContextClosePath(ctx);
+//    CGContextFillPath(ctx);
+    _headerCircleLayer.fillColor = (__bridge CGColorRef _Nullable)(self.colors[0]);
+    _headerCircleLayer.frame = CGRectMake(CGRectGetWidth([self bounds])/2 + innerRadius, CGRectGetHeight([self bounds])/2 - _ringsRadius/2, _ringsRadius, _ringsRadius);
+    UIBezierPath *aPath = [UIBezierPath bezierPathWithArcCenter:CGPointMake(_ringsRadius/2, _ringsRadius/2-0.5)
+                                                         radius:_ringsRadius/2
+                                                     startAngle:0
+                                                       endAngle:M_PI clockwise:YES];
+    _headerCircleLayer.path = aPath.CGPath;
+    
+    
 }
 
 
@@ -243,8 +280,9 @@ void angleGradient(byte* data, int w, int h, int* colors, int colorCount, float*
 	
 	for (int y = 0; y < h; y++)
 	for (int x = 0; x < w; x++) {
-		float dirX = x - centerX;
-		float dirY = y - centerY;
+
+        float dirX = x - centerX;
+        float dirY = y - centerY;
 		float angle = atan2f(dirY, dirX);
         
         

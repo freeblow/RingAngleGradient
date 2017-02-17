@@ -13,4 +13,6 @@
 - (void)stopAnimation;
 
 @property(nonatomic, copy) CABasicAnimation * spin;
+
+- (void)setInnerRadius:(CGFloat)aRadius;
 @end
